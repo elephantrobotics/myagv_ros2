@@ -44,15 +44,45 @@ bool MyAGV::init()
     sp.set_option(boost::asio::serial_port::stop_bits(boost::asio::serial_port::stop_bits::one));
     sp.set_option(boost::asio::serial_port::character_size(8));
     clearSerialBuffer();
-    //rclcpp::Time::init();
 
     lastTime = this->get_clock()->now();
     odomBroadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(this);
+    this->declare_parameter<std::string>("odometry.frame_id", "odom");
+    this->declare_parameter<std::string>("odometry.child_frame_id", "base_footprint");
+    this->declare_parameter<std::string>("imu.frame_id", "imu_link");
+    this->declare_parameter<std::string>("namespace", "");
     pub_imu =  create_publisher<sensor_msgs::msg::Imu>("imu", 20);
-    pub_odom = create_publisher<nav_msgs::msg::Odometry>("odom", 50); // used to be 50  
+    pub_odom = create_publisher<nav_msgs::msg::Odometry>("odom", 50); 
     pub_voltage = create_publisher<std_msgs::msg::Float32>("voltage", 10);
     pub_voltage_backup = create_publisher<std_msgs::msg::Float32>("voltage_backup", 10);
     restore(); //first restore,abort current err,don't restore
+
+    this->get_parameter_or<std::string>(
+        "odometry.frame_id",
+        frame_id_of_odometry_,
+        std::string("odom"));
+    
+    this->get_parameter_or<std::string>(
+        "odometry.child_frame_id",
+        child_frame_id_of_odometry_,
+        std::string("base_footprint"));
+
+    this->get_parameter_or<std::string>(
+        "imu.frame_id",
+        frame_id_of_imu_,
+        std::string("imu_link"));        
+
+    this->get_parameter_or<std::string>(
+        "namespace",
+        name_space_,
+        std::string(""));
+
+    if (name_space_ != "") {
+        frame_id_of_odometry_ = name_space_ + "/" + frame_id_of_odometry_;
+        child_frame_id_of_odometry_ = name_space_ + "/" + child_frame_id_of_odometry_;
+        frame_id_of_imu_ = name_space_ + "/" + frame_id_of_imu_;
+    }
+
     return true;
 }
 
@@ -151,6 +181,7 @@ bool MyAGV::readSpeed()
     }
     if (ret != TOTAL_RECEIVE_SIZE) {
         //ROS_ERROR("Read error %zu",ret);
+        if (ret == 27) RCLCPP_ERROR(this->get_logger(), "Please use myStudio to burn v1.1 firmware");
         RCLCPP_ERROR(this->get_logger(),"Read error %zu",ret);
         return false;
     }
@@ -256,7 +287,7 @@ void MyAGV::publisherImuSensor()
     sensor_msgs::msg::Imu ImuSensor;
 
     ImuSensor.header.stamp = this->get_clock()->now();; 
-    ImuSensor.header.frame_id = "imu_link";
+    ImuSensor.header.frame_id = frame_id_of_imu_;
 
     tf2::Quaternion qua;
     qua.setRPY(0, 0, yaw * M_PI / 180.0);
@@ -289,8 +320,8 @@ void MyAGV::publisherOdom(double dt)
 {   
     geometry_msgs::msg::TransformStamped odom_trans;
     odom_trans.header.stamp = this->get_clock()->now();
-    odom_trans.header.frame_id = "odom";
-    odom_trans.child_frame_id = "base_footprint";
+    odom_trans.header.frame_id = frame_id_of_odometry_;
+    odom_trans.child_frame_id = child_frame_id_of_odometry_;
 
     geometry_msgs::msg::Quaternion odom_quat;
 
@@ -316,8 +347,8 @@ void MyAGV::publisherOdom(double dt)
 
     nav_msgs::msg::Odometry odom;
     odom.header.stamp = this->get_clock()->now();;
-    odom.header.frame_id = "odom";
-    odom.child_frame_id = "base_footprint";
+    odom.header.frame_id = frame_id_of_odometry_;
+    odom.child_frame_id = child_frame_id_of_odometry_;
 
     odom.pose.pose.position.x = x;
     odom.pose.pose.position.y = y;

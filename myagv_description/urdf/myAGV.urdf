@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="myAGV">
 
-    <link name="base_footprint">
+    <xacro:arg name="namespace" default=""/>
+    <xacro:property name="namespace" value="$(arg namespace)"/>
+
+    <link name="${namespace}base_footprint">
         <visual>
         <geometry>
             <mesh filename="package://myagv_description/meshes/myagv_base.dae" scale="1 1 1"/>
@@ -13,14 +16,14 @@
         </visual>   
     </link>
 
-    <joint name="base_joint" type="fixed">
+    <joint name="${namespace}base_joint" type="fixed">
         <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
-        <parent link="base_footprint"/>
-        <child link="base_link"/>
+        <parent link="${namespace}base_footprint"/>
+        <child link="${namespace}base_link"/>
         <axis xyz="0 0 1"/>
     </joint>
 
-    <link name="base_link">
+    <link name="${namespace}base_link">
         <visual>
         <geometry>
             <mesh filename="package://myagv_description/meshes/myagv_up.dae" scale="1 1 1"/>
@@ -31,5 +34,29 @@
         </material>
         </visual>   
     </link>
+
+    <link name="${namespace}imu_link"/>
+
+    <joint name="${namespace}base_to_imu" type="fixed">
+        <parent link="${namespace}base_footprint"/>
+        <child link="${namespace}imu_link"/>
+        <origin xyz="0 0 0" rpy="0 3.14159 3.14159"/>
+    </joint>
+
+    <link name="${namespace}camera_link"/>
+
+    <joint name="${namespace}base_to_camera" type="fixed">
+        <parent link="${namespace}base_footprint"/>
+        <child link="${namespace}camera_link"/>
+        <origin xyz="0.13 0 0.131" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${namespace}laser_frame"/>
+
+    <joint name="${namespace}base_to_laser" type="fixed">
+        <parent link="${namespace}base_footprint"/>
+        <child link="${namespace}laser_frame"/>
+        <origin xyz="0.065 0.0 0.08" rpy="3.14159265 0.0 0.0"/>
+    </joint>
 
 </robot>

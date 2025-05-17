@@ -18,7 +18,7 @@
 
 #define twoKpDef	1.0f				// (2.0f * 0.5f)	// 2 * proportional gain
 #define twoKiDef	0.0f				// (2.0f * 0.0f)	// 2 * integral gain
-#define TOTAL_RECEIVE_SIZE 43         	// 43 RECEIVE_SIZE //The length of the data sent by the esp32
+#define TOTAL_RECEIVE_SIZE 43         	// 43 RECEIVE_SIZE(v1.1) //The length of the data sent by the esp32
 #define OFFSET_COUNT 	200
 
 class MyAGV : public rclcpp::Node{
@@ -67,6 +67,10 @@ private:
 	float accumulated_theta = 0.0f; 
 
     std::shared_ptr<rclcpp::Node> node_;
+	std::string frame_id_of_odometry_;
+	std::string child_frame_id_of_odometry_;
+	std::string frame_id_of_imu_;
+	std::string name_space_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_odom;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_voltage;
     rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_voltage_backup;
