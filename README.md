@@ -21,6 +21,7 @@ Opencv：4.8.0 with CUDA：YES
 - [x] navigation2
 - [x] ydlidar_ros2_driver
 - [ ] Gazebo simulation
+- [ ] myagv_multi
 
 # Installation
 
