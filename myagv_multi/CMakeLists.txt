@@ -58,7 +58,7 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
-install(PROGRAMS scripts/send_tfodom.py scripts/listen_tfodom.py scripts/set_pose.py scripts/laserTracker.py DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS scripts/send_tfodom.py scripts/listen_tfodom.py scripts/set_pose.py scripts/lasertracker.py DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
